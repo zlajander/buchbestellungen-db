@@ -12,6 +12,16 @@ $result = mysqli_query($con, $sql);
 </head>
 <body>
 <h1>Alle Buchbestellungen</h1>
+
+<?php if (isset($_GET['msg'])): ?>
+    <p style="color: green;">
+        <?php
+        if ($_GET['msg'] == "hinzugefuegt") echo "Bestellung wurde hinzugefügt!";
+        if ($_GET['msg'] == "geloescht") echo "Bestellung wurde gelöscht!";
+        ?>
+    </p>
+<?php endif; ?>
+
 <a href="hinzufuegen.php">Neue Bestellung hinzufügen</a>
 <table>
     <tr>
