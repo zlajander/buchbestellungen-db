@@ -1,6 +1,5 @@
 <?php
 require "config.php";
-
 $sql = "SELECT * FROM bestellungen";
 $result = mysqli_query($con, $sql);
 ?>
@@ -12,11 +11,8 @@ $result = mysqli_query($con, $sql);
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <h1>Alle Buchbestellungen</h1>
-
 <a href="hinzufuegen.php">Neue Bestellung hinzufügen</a>
-
 <table>
     <tr>
         <th>Bestellnummer</th>
@@ -26,7 +22,6 @@ $result = mysqli_query($con, $sql);
         <th>Erstellt am</th>
         <th>Aktion</th>
     </tr>
-
     <?php while ($row = mysqli_fetch_assoc($result)): ?>
     <tr>
         <td><?php echo $row['bestellnummer']; ?></td>
@@ -35,12 +30,10 @@ $result = mysqli_query($con, $sql);
         <td><?php echo $row['buchnummer']; ?></td>
         <td><?php echo $row['erstellt_am']; ?></td>
         <td>
-            <a> Löschen</a>
+            <a href="loeschen.php?id=<?php echo $row['bestellnummer']; ?>">Löschen</a>
         </td>
     </tr>
     <?php endwhile; ?>
-
 </table>
-
 </body>
 </html>
