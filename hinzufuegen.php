@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "INSERT INTO bestellungen (lesername, leseradresse, buchnummer) VALUES ('$name', '$adresse', '$buchnummer')";
     mysqli_query($con, $sql);
 
-    header("Location: index.php");
+    header("Location: index.php?msg=hinzugefuegt");
     exit;
 }
 ?>
