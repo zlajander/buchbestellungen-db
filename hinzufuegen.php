@@ -6,8 +6,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $adresse = $_POST['leseradresse'];
     $buchnummer = $_POST['buchnummer'];
 
-    $sql = "INSERT INTO bestellungen (lesername, leseradresse, buchnummer) VALUES ('$name', '$adresse', '$buchnummer')";
-    mysqli_query($con, $sql);
+    $stmt = mysqli_prepare($con, "INSERT INTO bestellungen (lesername, leseradresse, buchnummer) VALUES (?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "sss", $name, $adresse, $buchnummer);
+    mysqli_stmt_execute($stmt);
 
     header("Location: index.php?msg=hinzugefuegt");
     exit;
