@@ -72,3 +72,56 @@ input[type=submit] {
 input[type=submit]:hover {
     background-color: #1e4666;
 }
+
+button {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background-color: grey;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1e4666;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    z-index: 1000;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: transparent;
+    color: #333;
+    font-size: 24px;
+    padding: 0;
+}
+
+.modal-close:hover {
+    background: transparent;
+    color: #000;
+}

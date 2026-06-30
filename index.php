@@ -1,16 +1,16 @@
 <?php
 require "config.php";
-$suche = "";
+$suchbegriff = "";
 if (isset($_GET['suche'])) {
-    $suche = $_GET['suche'];
+    $suchbegriff = $_GET['suche'];
 }
 
-if ($suche != "") {
-    $sql = "SELECT * FROM bestellungen WHERE lesername LIKE '%$suche%' OR buchnummer LIKE '%$suche%'";
+if ($suchbegriff != "") {
+    $sqlBestellungen = "SELECT * FROM bestellungen WHERE lesername LIKE '%$suchbegriff%' OR buchnummer LIKE '%$suchbegriff%'";
 } else {
-    $sql = "SELECT * FROM bestellungen";
+    $sqlBestellungen = "SELECT * FROM bestellungen";
 }
-$result = mysqli_query($con, $sql);
+$resultBestellungen = mysqli_query($con, $sqlBestellungen);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -22,7 +22,7 @@ $result = mysqli_query($con, $sql);
 <body>
 <h1>Alle Buchbestellungen</h1>
 <form method="GET">
-    <input type="text" id="suche" name="suche" placeholder="Suche..." value="<?php echo $suche; ?>">
+    <input type="text" id="suche" name="suche" placeholder="Suche..." value="<?php echo $suchbegriff; ?>">
     <input type="submit" value="Suchen">
 </form>
 
@@ -35,7 +35,27 @@ $result = mysqli_query($con, $sql);
     </p>
 <?php endif; ?>
 
-<a href="hinzufuegen.php">Neue Bestellung hinzufügen</a>
+<button type="button" id="openModalBtn">Neue Bestellung hinzufügen</button>
+
+<div id="orderModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+        <button type="button" class="modal-close" id="closeModalBtn" aria-label="Schließen">&times;</button>
+        <h2 id="modalTitle">Neue Buchbestellung</h2>
+        <form method="post" action="hinzufuegen.php">
+            <label for="lesername">Name des Lesers:</label>
+            <input type="text" id="lesername" name="lesername" required>
+
+            <label for="leseradresse">Adresse des Lesers:</label>
+            <input type="text" id="leseradresse" name="leseradresse" required>
+
+            <label for="buchnummer">Buch-Nummer (8-stellig):</label>
+            <input type="text" id="buchnummer" name="buchnummer" maxlength="8" required>
+
+            <input type="submit" value="Hinzufügen">
+        </form>
+    </div>
+</div>
+
 <table id="bestellungen">
     <tr>
         <th>Bestellnummer</th>
@@ -45,15 +65,15 @@ $result = mysqli_query($con, $sql);
         <th>Erstellt am</th>
         <th>Aktion</th>
     </tr>
-    <?php while ($row = mysqli_fetch_assoc($result)): ?>
+    <?php while ($bestellung = mysqli_fetch_assoc($resultBestellungen)): ?>
     <tr>
-        <td><?php echo $row['bestellnummer']; ?></td>
-        <td><?php echo $row['lesername']; ?></td>
-        <td><?php echo $row['leseradresse']; ?></td>
-        <td><?php echo $row['buchnummer']; ?></td>
-        <td><?php echo $row['erstellt_am']; ?></td>
+        <td><?php echo $bestellung['bestellnummer']; ?></td>
+        <td><?php echo $bestellung['lesername']; ?></td>
+        <td><?php echo $bestellung['leseradresse']; ?></td>
+        <td><?php echo $bestellung['buchnummer']; ?></td>
+        <td><?php echo $bestellung['erstellt_am']; ?></td>
         <td>
-            <a href="loeschen.php?id=<?php echo $row['bestellnummer']; ?>">Löschen</a>
+            <a href="loeschen.php?id=<?php echo $bestellung['bestellnummer']; ?>">Löschen</a>
         </td>
     </tr>
     <?php endwhile; ?>
@@ -74,6 +94,34 @@ $result = mysqli_query($con, $sql);
                     );
                 }
             });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalFenster = document.getElementById('orderModal');
+        const oeffnenButton = document.getElementById('openModalBtn');
+        const schliessenButton = document.getElementById('closeModalBtn');
+
+        function schliesseModal() {
+            modalFenster.classList.remove('show');
+        }
+
+        oeffnenButton.addEventListener('click', function() {
+            modalFenster.classList.add('show');
+        });
+
+        schliessenButton.addEventListener('click', schliesseModal);
+
+        modalFenster.addEventListener('click', function(event) {
+            if (event.target === modalFenster) {
+                schliesseModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                schliesseModal();
+            }
         });
     });
 </script>
