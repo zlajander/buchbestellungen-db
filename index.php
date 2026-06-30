@@ -1,6 +1,15 @@
 <?php
 require "config.php";
-$sql = "SELECT * FROM bestellungen";
+$suche = "";
+if (isset($_GET['suche'])) {
+    $suche = $_GET['suche'];
+}
+
+if ($suche != "") {
+    $sql = "SELECT * FROM bestellungen WHERE lesername LIKE '%$suche%' OR buchnummer LIKE '%$suche%'";
+} else {
+    $sql = "SELECT * FROM bestellungen";
+}
 $result = mysqli_query($con, $sql);
 ?>
 <!DOCTYPE html>
@@ -12,6 +21,10 @@ $result = mysqli_query($con, $sql);
 </head>
 <body>
 <h1>Alle Buchbestellungen</h1>
+<form method="GET">
+    <input type="text" name="suche" placeholder="Suche..." value="<?php echo $suche; ?>">
+    <input type="submit" value="Suchen">
+</form>
 
 <?php if (isset($_GET['msg'])): ?>
     <p style="color: green;">
