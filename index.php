@@ -22,7 +22,7 @@ $result = mysqli_query($con, $sql);
 <body>
 <h1>Alle Buchbestellungen</h1>
 <form method="GET">
-    <input type="text" name="suche" placeholder="Suche..." value="<?php echo $suche; ?>">
+    <input type="text" id="suche" name="suche" placeholder="Suche..." value="<?php echo $suche; ?>">
     <input type="submit" value="Suchen">
 </form>
 
@@ -36,7 +36,7 @@ $result = mysqli_query($con, $sql);
 <?php endif; ?>
 
 <a href="hinzufuegen.php">Neue Bestellung hinzufügen</a>
-<table>
+<table id="bestellungen">
     <tr>
         <th>Bestellnummer</th>
         <th>Name</th>
@@ -58,5 +58,24 @@ $result = mysqli_query($con, $sql);
     </tr>
     <?php endwhile; ?>
 </table>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#suche").keyup(function(){
+            var input = $(this).val();
+
+            $.ajax({
+                url: "suche.php",
+                method: "GET",
+                data: {suche: input},
+                success: function(data){
+                    $("#bestellungen").html(
+                        "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>Buchnummer</th><th>Erstellt am</th><th>Aktion</th></tr>" + data
+                    );
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>
