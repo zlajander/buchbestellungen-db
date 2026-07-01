@@ -7,12 +7,15 @@ if (isset($_GET['suche'])) {
 }
 
 if ($suche != "") {
-    $sql = "SELECT * FROM bestellungen WHERE lesername LIKE '%$suche%' OR buchnummer LIKE '%$suche%'";
+    $suche_like = "%" . $suche . "%";
+    $stmt = mysqli_prepare($con, "SELECT * FROM bestellungen WHERE lesername LIKE ? OR buchnummer LIKE ?");
+    mysqli_stmt_bind_param($stmt, "ss", $suche_like, $suche_like);
 } else {
-    $sql = "SELECT * FROM bestellungen";
+    $stmt = mysqli_prepare($con, "SELECT * FROM bestellungen");
 }
 
-$result = mysqli_query($con, $sql);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 
 while ($row = mysqli_fetch_assoc($result)) {
     echo "<tr>";

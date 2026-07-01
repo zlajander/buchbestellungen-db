@@ -6,11 +6,14 @@ if (isset($_GET['suche'])) {
 }
 
 if ($suchbegriff != "") {
-    $sqlBestellungen = "SELECT * FROM bestellungen WHERE lesername LIKE '%$suchbegriff%' OR buchnummer LIKE '%$suchbegriff%'";
+    $suchbegriff_like = "%" . $suchbegriff . "%";
+    $stmt = mysqli_prepare($con, "SELECT * FROM bestellungen WHERE lesername LIKE ? OR buchnummer LIKE ?");
+    mysqli_stmt_bind_param($stmt, "ss", $suchbegriff_like, $suchbegriff_like);
 } else {
-    $sqlBestellungen = "SELECT * FROM bestellungen";
+    $stmt = mysqli_prepare($con, "SELECT * FROM bestellungen");
 }
-$resultBestellungen = mysqli_query($con, $sqlBestellungen);
+mysqli_stmt_execute($stmt);
+$resultBestellungen = mysqli_stmt_get_result($stmt);
 ?>
 <!DOCTYPE html>
 <html lang="de">
