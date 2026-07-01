@@ -87,16 +87,19 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
     $(document).ready(function() {
         $("#suche").keyup(function(){
             var input = $(this).val();
-            $.ajax({
-                url: "suche.php",
-                method: "GET",
-                data: {suche: input},
-                success: function(data){
-                    $("#bestellungen").html(
-                        "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>Buchnummer</th><th>Erstellt am</th><th>Aktion</th></tr>" + data
-                    );
-                }
-            });
+            clearTimeout(debounceTimer);
+            var debounceTimer = setTimeout(function() {
+                $.ajax({
+                    url: "suche.php",
+                    method: "GET",
+                    data: {suche: input},
+                    success: function(data){
+                        $("#bestellungen").html(
+                            "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>Buchnummer</th><th>Erstellt am</th><th>Aktion</th></tr>" + data
+                        );
+                    }
+                });
+            }, 300);
         });
 
         $("#modal-form").submit(function(e) {
