@@ -70,13 +70,13 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
     </tr>
     <?php while ($bestellung = mysqli_fetch_assoc($resultBestellungen)): ?>
     <tr>
-        <td><?php echo $bestellung['bestellnummer']; ?></td>
-        <td><?php echo $bestellung['lesername']; ?></td>
-        <td><?php echo $bestellung['leseradresse']; ?></td>
-        <td><?php echo $bestellung['buchnummer']; ?></td>
-        <td><?php echo $bestellung['erstellt_am']; ?></td>
+        <td><?php echo htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES); ?></td>
+        <td><?php echo htmlspecialchars($bestellung['lesername'], ENT_QUOTES); ?></td>
+        <td><?php echo htmlspecialchars($bestellung['leseradresse'], ENT_QUOTES); ?></td>
+        <td><?php echo htmlspecialchars($bestellung['buchnummer'], ENT_QUOTES); ?></td>
+        <td><?php echo htmlspecialchars($bestellung['erstellt_am'], ENT_QUOTES); ?></td>
         <td>
-            <a href="loeschen.php?id=<?php echo $bestellung['bestellnummer']; ?>">Löschen</a>
+            <a href="loeschen.php?id=<?php echo htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES); ?>">Löschen</a>
         </td>
     </tr>
     <?php endwhile; ?>

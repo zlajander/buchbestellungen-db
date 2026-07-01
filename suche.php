@@ -19,12 +19,12 @@ $result = mysqli_stmt_get_result($stmt);
 
 while ($row = mysqli_fetch_assoc($result)) {
     echo "<tr>";
-    echo "<td>" . $row['bestellnummer'] . "</td>";
-    echo "<td>" . $row['lesername'] . "</td>";
-    echo "<td>" . $row['leseradresse'] . "</td>";
-    echo "<td>" . $row['buchnummer'] . "</td>";
-    echo "<td>" . $row['erstellt_am'] . "</td>";
-    echo "<td><a href='loeschen.php?id=" . $row['bestellnummer'] . "'>Löschen</a></td>";
+    echo "<td>" . htmlspecialchars($row['bestellnummer'], ENT_QUOTES) . "</td>";
+    echo "<td>" . htmlspecialchars($row['lesername'], ENT_QUOTES) . "</td>";
+    echo "<td>" . htmlspecialchars($row['leseradresse'], ENT_QUOTES) . "</td>";
+    echo "<td>" . htmlspecialchars($row['buchnummer'], ENT_QUOTES) . "</td>";
+    echo "<td>" . htmlspecialchars($row['erstellt_am'], ENT_QUOTES) . "</td>";
+    echo "<td><a href='loeschen.php?id=" . htmlspecialchars($row['bestellnummer'], ENT_QUOTES) . "'>Löschen</a></td>";
     echo "</tr>";
 }
 ?>
