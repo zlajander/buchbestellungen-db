@@ -44,7 +44,8 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
     <div class="modal-content">
         <button type="button" class="modal-close" id="closeModalBtn" aria-label="Schließen">&times;</button>
         <h2 id="modalTitle">Neue Buchbestellung</h2>
-        <form method="post" action="hinzufuegen.php">
+        <p id="modal-fehler" style="color: red; display: none;"></p>
+        <form id="modal-form">
             <label for="lesername">Name des Lesers:</label>
             <input type="text" id="lesername" name="lesername" required>
 
@@ -86,7 +87,6 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
     $(document).ready(function() {
         $("#suche").keyup(function(){
             var input = $(this).val();
-
             $.ajax({
                 url: "suche.php",
                 method: "GET",
@@ -95,6 +95,31 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
                     $("#bestellungen").html(
                         "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>Buchnummer</th><th>Erstellt am</th><th>Aktion</th></tr>" + data
                     );
+                }
+            });
+        });
+
+        $("#modal-form").submit(function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: "hinzufuegen.php",
+                method: "POST",
+                data: {
+                    lesername: $("#lesername").val(),
+                    leseradresse: $("#leseradresse").val(),
+                    buchnummer: $("#buchnummer").val()
+                },
+                dataType: "json",
+                success: function(response) {
+                    if (response.status == "ok") {
+                        $("#orderModal").removeClass("show");
+                        location.reload();
+                    } else {
+                        $("#modal-fehler").text(response.meldung).show();
+                    }
+                },
+                error: function() {
+                    $("#modal-fehler").text("Unbekannter Fehler.").show();
                 }
             });
         });
@@ -107,6 +132,7 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
 
         function schliesseModal() {
             modalFenster.classList.remove('show');
+            document.getElementById('modal-fehler').style.display = 'none';
         }
 
         oeffnenButton.addEventListener('click', function() {
