@@ -1,17 +1,6 @@
 <?php
 require "config.php";
-$suchbegriff = "";
-if (isset($_GET['suche'])) {
-    $suchbegriff = $_GET['suche'];
-}
-
-if ($suchbegriff != "") {
-    $suchbegriff_like = "%" . $suchbegriff . "%";
-    $stmt = mysqli_prepare($con, "SELECT * FROM bestellungen WHERE lesername LIKE ? OR buchnummer LIKE ?");
-    mysqli_stmt_bind_param($stmt, "ss", $suchbegriff_like, $suchbegriff_like);
-} else {
-    $stmt = mysqli_prepare($con, "SELECT * FROM bestellungen");
-}
+$stmt = mysqli_prepare($con, "SELECT * FROM bestellungen");
 mysqli_stmt_execute($stmt);
 $resultBestellungen = mysqli_stmt_get_result($stmt);
 ?>
@@ -24,10 +13,8 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
 </head>
 <body>
 <h1>Alle Buchbestellungen</h1>
-<form method="GET">
-    <input type="text" id="suche" name="suche" placeholder="Suche..." value="<?php echo $suchbegriff; ?>">
-    <input type="submit" value="Suchen">
-</form>
+
+<input type="text" id="suche" placeholder="Suche...">
 
 <?php if (isset($_GET['msg'])): ?>
     <p style="color: green;">
@@ -84,11 +71,12 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
 </table>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
+    var debounceTimer;
     $(document).ready(function() {
         $("#suche").keyup(function(){
             var input = $(this).val();
             clearTimeout(debounceTimer);
-            var debounceTimer = setTimeout(function() {
+            debounceTimer = setTimeout(function() {
                 $.ajax({
                     url: "suche.php",
                     method: "GET",
