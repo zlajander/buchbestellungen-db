@@ -1,20 +1,10 @@
 <?php
 require "config.php";
+require "funktionen.php";
 
 $seite = 1;
-$pro_seite = 50;
-$offset = 0;
-
-$stmt_total = mysqli_prepare($con, "SELECT COUNT(*) as total FROM bestellungen");
-mysqli_stmt_execute($stmt_total);
-$result_total = mysqli_stmt_get_result($stmt_total);
-$total = mysqli_fetch_assoc($result_total)['total'];
-$seiten_gesamt = (int)ceil($total / $pro_seite);
-
-$stmt = mysqli_prepare($con, "SELECT * FROM bestellungen LIMIT ? OFFSET ?");
-mysqli_stmt_bind_param($stmt, "ii", $pro_seite, $offset);
-mysqli_stmt_execute($stmt);
-$resultBestellungen = mysqli_stmt_get_result($stmt);
+$daten = holeBestellungen($con, "", $seite);
+$seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -68,21 +58,7 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
         <th>Erstellt am</th>
         <th>Aktion</th>
     </tr>
-    <?php while ($bestellung = mysqli_fetch_assoc($resultBestellungen)): ?>
-    <tr>
-        <td><?php echo htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES); ?></td>
-        <td><?php echo htmlspecialchars($bestellung['lesername'], ENT_QUOTES); ?></td>
-        <td><?php echo htmlspecialchars($bestellung['leseradresse'], ENT_QUOTES); ?></td>
-        <td><?php echo htmlspecialchars($bestellung['buchnummer'], ENT_QUOTES); ?></td>
-        <td><?php echo htmlspecialchars($bestellung['erstellt_am'], ENT_QUOTES); ?></td>
-        <td>
-            <form action="loeschen.php" method="post" class="loeschen-form">
-                <input type="hidden" name="id" value="<?php echo htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES); ?>">
-                <button type="submit" class="loeschen-btn">Löschen</button>
-            </form>
-        </td>
-    </tr>
-    <?php endwhile; ?>
+    <?php foreach ($daten['bestellungen'] as $bestellung) echo zeileHtml($bestellung); ?>
 </table>
 
 <div id="pagination"></div>
