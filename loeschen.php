@@ -1,7 +1,12 @@
 <?php
 require "config.php";
 
-$id = $_GET['id'];
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    header("Location: index.php");
+    exit;
+}
+
+$id = $_POST['id'];
 
 $stmt = mysqli_prepare($con, "DELETE FROM bestellungen WHERE bestellnummer = ?");
 mysqli_stmt_bind_param($stmt, "i", $id);

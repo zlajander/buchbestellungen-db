@@ -1,6 +1,18 @@
 <?php
 require "config.php";
-$stmt = mysqli_prepare($con, "SELECT * FROM bestellungen");
+
+$seite = 1;
+$pro_seite = 50;
+$offset = 0;
+
+$stmt_total = mysqli_prepare($con, "SELECT COUNT(*) as total FROM bestellungen");
+mysqli_stmt_execute($stmt_total);
+$result_total = mysqli_stmt_get_result($stmt_total);
+$total = mysqli_fetch_assoc($result_total)['total'];
+$seiten_gesamt = (int)ceil($total / $pro_seite);
+
+$stmt = mysqli_prepare($con, "SELECT * FROM bestellungen LIMIT ? OFFSET ?");
+mysqli_stmt_bind_param($stmt, "ii", $pro_seite, $offset);
 mysqli_stmt_execute($stmt);
 $resultBestellungen = mysqli_stmt_get_result($stmt);
 ?>
@@ -64,30 +76,91 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
         <td><?php echo htmlspecialchars($bestellung['buchnummer'], ENT_QUOTES); ?></td>
         <td><?php echo htmlspecialchars($bestellung['erstellt_am'], ENT_QUOTES); ?></td>
         <td>
-            <a href="loeschen.php?id=<?php echo htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES); ?>">Löschen</a>
+            <form action="loeschen.php" method="post" class="loeschen-form">
+                <input type="hidden" name="id" value="<?php echo htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES); ?>">
+                <button type="submit" class="loeschen-btn">Löschen</button>
+            </form>
         </td>
     </tr>
     <?php endwhile; ?>
 </table>
+
+<div id="pagination"></div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
     var debounceTimer;
+    var aktuelle_seite = 1;
+    var seiten_gesamt = <?php echo $seiten_gesamt; ?>;
+    var aktueller_suchbegriff = "";
+
+    function ladeDaten(seite, suche) {
+        $.ajax({
+            url: "suche.php",
+            method: "GET",
+            data: { suche: suche, seite: seite },
+            dataType: "json",
+            success: function(response) {
+                $("#bestellungen").html(
+                    "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>Buchnummer</th><th>Erstellt am</th><th>Aktion</th></tr>" + response.zeilen
+                );
+                aktuelle_seite = response.aktuelle_seite;
+                seiten_gesamt = response.seiten_gesamt;
+                erstellePagination(aktuelle_seite, seiten_gesamt);
+                $("html, body").animate({ scrollTop: 0 }, 200);
+            }
+        });
+    }
+
+    function erstellePagination(aktSeite, gesamt) {
+        var html = "";
+
+        if (aktSeite > 1) {
+            html += "<button class='page-btn' data-seite='" + (aktSeite - 1) + "'>←</button>";
+        } else {
+            html += "<button disabled>←</button>";
+        }
+
+        var rand = 2; 
+        var letzteGezeigt = 0;
+        for (var i = 1; i <= gesamt; i++) {
+            if (i === 1 || i === gesamt || (i >= aktSeite - rand && i <= aktSeite + rand)) {
+                if (letzteGezeigt !== 0 && i - letzteGezeigt > 1) {
+                    html += "<span class='page-dots'>…</span>";
+                }
+                if (i === aktSeite) {
+                    html += "<button class='page-btn aktiv' data-seite='" + i + "'>" + i + "</button>";
+                } else {
+                    html += "<button class='page-btn' data-seite='" + i + "'>" + i + "</button>";
+                }
+                letzteGezeigt = i;
+            }
+        }
+
+        if (aktSeite < gesamt) {
+            html += "<button class='page-btn' data-seite='" + (aktSeite + 1) + "'>→</button>";
+        } else {
+            html += "<button disabled>→</button>";
+        }
+
+        $("#pagination").html(html);
+    }
+
     $(document).ready(function() {
+
+        erstellePagination(aktuelle_seite, seiten_gesamt);
+
         $("#suche").keyup(function(){
             var input = $(this).val();
+            aktueller_suchbegriff = input;
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(function() {
-                $.ajax({
-                    url: "suche.php",
-                    method: "GET",
-                    data: {suche: input},
-                    success: function(data){
-                        $("#bestellungen").html(
-                            "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>Buchnummer</th><th>Erstellt am</th><th>Aktion</th></tr>" + data
-                        );
-                    }
-                });
+                ladeDaten(1, aktueller_suchbegriff);
             }, 300);
+        });
+
+        $(document).on("click", ".page-btn", function() {
+            ladeDaten($(this).data("seite"), aktueller_suchbegriff);
         });
 
         $("#modal-form").submit(function(e) {
@@ -114,6 +187,7 @@ $resultBestellungen = mysqli_stmt_get_result($stmt);
                 }
             });
         });
+
     });
 
     document.addEventListener('DOMContentLoaded', function() {

@@ -125,3 +125,54 @@ button:hover {
     background: transparent;
     color: #000;
 }
+
+.loeschen-form {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    display: inline;
+}
+
+.loeschen-btn {
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: #2c5f8a;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+}
+
+.loeschen-btn:hover {
+    background: none;
+    text-decoration: underline;
+    color: #1e4666;
+}
+
+#pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 20px;
+}
+
+#pagination button {
+    margin-top: 0;
+    min-width: 40px;
+}
+
+.page-dots {
+    padding: 0 6px;
+    color: #777;
+}
+
+#pagination button.aktiv {
+    background-color: #1e4666;
+    font-weight: bold;
+    border: 2px solid #0d2438;
+    transform: scale(1.1);
+    pointer-events: none;
+}
