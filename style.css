@@ -169,6 +169,12 @@ button:hover {
     color: #777;
 }
 
+#anzahl-info {
+    text-align: center;
+    margin-top: 10px;
+    color: #555;
+}
+
 #pagination button.aktiv {
     background-color: #1e4666;
     font-weight: bold;

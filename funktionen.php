@@ -2,28 +2,32 @@
 
 const PRO_SEITE = 50;
 
-function holeBestellungen($con, $suchbegriff, $seite) {
+function holeBestellungen($con, $suchbegriff, $seite): array {
     $offset = ($seite - 1) * PRO_SEITE;
     $pro_seite = PRO_SEITE;
 
+    $spalten = "b.bestellnummer, b.lesername, b.leseradresse, bu.isbn, bu.titel, b.erstellt_am";
+    $von = "FROM bestellungen b JOIN buecher bu ON b.buch_id = bu.buch_id";
+
     if ($suchbegriff !== "") {
         $suche_like = "%" . $suchbegriff . "%";
+        $wo = "WHERE b.lesername LIKE ? OR bu.titel LIKE ? OR bu.isbn LIKE ?";
 
-        $stmt_total = mysqli_prepare($con, "SELECT COUNT(*) as total FROM bestellungen WHERE lesername LIKE ? OR buchnummer LIKE ?");
-        mysqli_stmt_bind_param($stmt_total, "ss", $suche_like, $suche_like);
+        $stmt_total = mysqli_prepare($con, "SELECT COUNT(*) as total $von $wo");
+        mysqli_stmt_bind_param($stmt_total, "sss", $suche_like, $suche_like, $suche_like);
         mysqli_stmt_execute($stmt_total);
         $result_total = mysqli_stmt_get_result($stmt_total);
         $total = mysqli_fetch_assoc($result_total)['total'];
 
-        $stmt = mysqli_prepare($con, "SELECT * FROM bestellungen WHERE lesername LIKE ? OR buchnummer LIKE ? LIMIT ? OFFSET ?");
-        mysqli_stmt_bind_param($stmt, "ssii", $suche_like, $suche_like, $pro_seite, $offset);
+        $stmt = mysqli_prepare($con, "SELECT $spalten $von $wo LIMIT ? OFFSET ?");
+        mysqli_stmt_bind_param($stmt, "sssii", $suche_like, $suche_like, $suche_like, $pro_seite, $offset);
     } else {
-        $stmt_total = mysqli_prepare($con, "SELECT COUNT(*) as total FROM bestellungen");
+        $stmt_total = mysqli_prepare($con, "SELECT COUNT(*) as total $von");
         mysqli_stmt_execute($stmt_total);
         $result_total = mysqli_stmt_get_result($stmt_total);
         $total = mysqli_fetch_assoc($result_total)['total'];
 
-        $stmt = mysqli_prepare($con, "SELECT * FROM bestellungen LIMIT ? OFFSET ?");
+        $stmt = mysqli_prepare($con, "SELECT $spalten $von LIMIT ? OFFSET ?");
         mysqli_stmt_bind_param($stmt, "ii", $pro_seite, $offset);
     }
 
@@ -41,12 +45,22 @@ function holeBestellungen($con, $suchbegriff, $seite) {
     ];
 }
 
-function zeileHtml($bestellung) {
+function holeBuecher($con): array {
+    $result = mysqli_query($con, "SELECT buch_id, isbn, titel FROM buecher ORDER BY titel");
+    $buecher = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $buecher[] = $row;
+    }
+    return $buecher;
+}
+
+function zeileHtml($bestellung): string {
     $html  = "<tr>";
     $html .= "<td>" . htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars($bestellung['lesername'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars($bestellung['leseradresse'], ENT_QUOTES) . "</td>";
-    $html .= "<td>" . htmlspecialchars($bestellung['buchnummer'], ENT_QUOTES) . "</td>";
+    $html .= "<td>" . htmlspecialchars($bestellung['isbn'], ENT_QUOTES) . "</td>";
+    $html .= "<td>" . htmlspecialchars($bestellung['titel'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars($bestellung['erstellt_am'], ENT_QUOTES) . "</td>";
     $html .= "<td><form action='loeschen.php' method='post' class='loeschen-form'>";
     $html .= "<input type='hidden' name='id' value='" . htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES) . "'>";

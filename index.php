@@ -5,12 +5,14 @@ require "funktionen.php";
 $seite = 1;
 $daten = holeBestellungen($con, "", $seite);
 $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
+$buecher = holeBuecher($con);
 ?>
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>Buchbestellungen</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -41,8 +43,15 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
             <label for="leseradresse">Adresse des Lesers:</label>
             <input type="text" id="leseradresse" name="leseradresse" required>
 
-            <label for="buchnummer">Buch-Nummer (8-stellig):</label>
-            <input type="text" id="buchnummer" name="buchnummer" maxlength="8" required>
+            <label for="buch_id">Buch:</label>
+            <select id="buch_id" name="buch_id" required>
+                <option value="">-- Buch auswählen --</option>
+                <?php foreach ($buecher as $buch): ?>
+                    <option value="<?php echo htmlspecialchars($buch['buch_id'], ENT_QUOTES); ?>">
+                        <?php echo htmlspecialchars($buch['titel'] . " (" . $buch['isbn'] . ")", ENT_QUOTES); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
             <input type="submit" value="Hinzufügen">
         </form>
@@ -54,7 +63,8 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
         <th>Bestellnummer</th>
         <th>Name</th>
         <th>Adresse</th>
-        <th>Buchnummer</th>
+        <th>ISBN</th>
+        <th>Titel</th>
         <th>Erstellt am</th>
         <th>Aktion</th>
     </tr>
@@ -63,7 +73,10 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
 
 <div id="pagination"></div>
 
+<div id="anzahl-info"><?php echo $daten['total']; ?> Datensätze</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script type="text/javascript">
     var debounceTimer;
     var aktuelle_seite = 1;
@@ -78,11 +91,16 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
             dataType: "json",
             success: function(response) {
                 $("#bestellungen").html(
-                    "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>Buchnummer</th><th>Erstellt am</th><th>Aktion</th></tr>" + response.zeilen
+                    "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>ISBN</th><th>Titel</th><th>Erstellt am</th><th>Aktion</th></tr>" + response.zeilen
                 );
                 aktuelle_seite = response.aktuelle_seite;
                 seiten_gesamt = response.seiten_gesamt;
                 erstellePagination(aktuelle_seite, seiten_gesamt);
+                if (suche === "") {
+                    $("#anzahl-info").text(response.total + " Datensätze");
+                } else {
+                    $("#anzahl-info").text(response.total + " Treffer für \"" + suche + "\"");
+                }
                 $("html, body").animate({ scrollTop: 0 }, 200);
             }
         });
@@ -126,6 +144,12 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
 
         erstellePagination(aktuelle_seite, seiten_gesamt);
 
+        $("#buch_id").select2({
+            dropdownParent: $("#orderModal"),
+            placeholder: "Buch suchen (Titel oder ISBN)",
+            width: "100%"
+        });
+
         $("#suche").keyup(function(){
             var input = $(this).val();
             aktueller_suchbegriff = input;
@@ -147,7 +171,7 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
                 data: {
                     lesername: $("#lesername").val(),
                     leseradresse: $("#leseradresse").val(),
-                    buchnummer: $("#buchnummer").val()
+                    buch_id: $("#buch_id").val()
                 },
                 dataType: "json",
                 success: function(response) {
