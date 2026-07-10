@@ -175,6 +175,30 @@ button:hover {
     color: #555;
 }
 
+#menu {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#menu a {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: grey;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+#menu a:hover {
+    background-color: #1e4666;
+    text-decoration: none;
+}
+
+#menu a.aktiv {
+    background-color: #1e4666;
+}
+
 #pagination button.aktiv {
     background-color: #1e4666;
     font-weight: bold;

@@ -16,6 +16,11 @@ $buecher = holeBuecher($con);
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="menu">
+    <a href="index.php" class="aktiv">Bestellungen</a>
+    <a href="buecher.php">Bücher</a>
+</div>
+
 <h1>Alle Buchbestellungen</h1>
 
 <input type="text" id="suche" placeholder="Suche...">
@@ -77,6 +82,7 @@ $buecher = holeBuecher($con);
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="app.js"></script>
 <script type="text/javascript">
     var debounceTimer;
     var aktuelle_seite = 1;
@@ -106,43 +112,10 @@ $buecher = holeBuecher($con);
         });
     }
 
-    function erstellePagination(aktSeite, gesamt) {
-        var html = "";
-
-        if (aktSeite > 1) {
-            html += "<button class='page-btn' data-seite='" + (aktSeite - 1) + "'>←</button>";
-        } else {
-            html += "<button disabled>←</button>";
-        }
-
-        var rand = 2; 
-        var letzteGezeigt = 0;
-        for (var i = 1; i <= gesamt; i++) {
-            if (i === 1 || i === gesamt || (i >= aktSeite - rand && i <= aktSeite + rand)) {
-                if (letzteGezeigt !== 0 && i - letzteGezeigt > 1) {
-                    html += "<span class='page-dots'>…</span>";
-                }
-                if (i === aktSeite) {
-                    html += "<button class='page-btn aktiv' data-seite='" + i + "'>" + i + "</button>";
-                } else {
-                    html += "<button class='page-btn' data-seite='" + i + "'>" + i + "</button>";
-                }
-                letzteGezeigt = i;
-            }
-        }
-
-        if (aktSeite < gesamt) {
-            html += "<button class='page-btn' data-seite='" + (aktSeite + 1) + "'>→</button>";
-        } else {
-            html += "<button disabled>→</button>";
-        }
-
-        $("#pagination").html(html);
-    }
-
     $(document).ready(function() {
 
         erstellePagination(aktuelle_seite, seiten_gesamt);
+        initModal('orderModal', 'openModalBtn', 'closeModalBtn');
 
         $("#buch_id").select2({
             dropdownParent: $("#orderModal"),
@@ -188,35 +161,6 @@ $buecher = holeBuecher($con);
             });
         });
 
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const modalFenster = document.getElementById('orderModal');
-        const oeffnenButton = document.getElementById('openModalBtn');
-        const schliessenButton = document.getElementById('closeModalBtn');
-
-        function schliesseModal() {
-            modalFenster.classList.remove('show');
-            document.getElementById('modal-fehler').style.display = 'none';
-        }
-
-        oeffnenButton.addEventListener('click', function() {
-            modalFenster.classList.add('show');
-        });
-
-        schliessenButton.addEventListener('click', schliesseModal);
-
-        modalFenster.addEventListener('click', function(event) {
-            if (event.target === modalFenster) {
-                schliesseModal();
-            }
-        });
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                schliesseModal();
-            }
-        });
     });
 </script>
 </body>
