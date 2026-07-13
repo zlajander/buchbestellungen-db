@@ -102,7 +102,7 @@ function buchZeileHtml($buch): string {
     $html .= "<td>" . htmlspecialchars($buch['titel'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars($buch['autor'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars($buch['verlag'], ENT_QUOTES) . "</td>";
-    $html .= "<td>" . htmlspecialchars($buch['veroeffentlichungsdatum'], ENT_QUOTES) . "</td>";
+    $html .= "<td>" . htmlspecialchars(date('d.m.Y', strtotime($buch['veroeffentlichungsdatum'])), ENT_QUOTES) . "</td>";
     $html .= "</tr>";
     return $html;
 }
@@ -146,7 +146,7 @@ function zeileHtml($bestellung): string {
     $html .= "<td>" . htmlspecialchars($bestellung['leseradresse'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars($bestellung['isbn'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars($bestellung['titel'], ENT_QUOTES) . "</td>";
-    $html .= "<td>" . htmlspecialchars($bestellung['erstellt_am'], ENT_QUOTES) . "</td>";
+    $html .= "<td>" . htmlspecialchars(date('d.m.Y H:i', strtotime($bestellung['erstellt_am'])), ENT_QUOTES) . "</td>";
     $html .= "<td><form action='loeschen.php' method='post' class='loeschen-form'>";
     $html .= "<input type='hidden' name='id' value='" . htmlspecialchars($bestellung['bestellnummer'], ENT_QUOTES) . "'>";
     $html .= "<button type='submit' class='loeschen-btn'>Löschen</button>";
