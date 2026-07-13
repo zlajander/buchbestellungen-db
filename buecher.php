@@ -53,11 +53,11 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
 
 <table id="buecher">
     <tr>
-        <th>ISBN</th>
-        <th>Titel</th>
-        <th>Autor</th>
-        <th>Verlag</th>
-        <th>Veröffentlichungsdatum</th>
+        <th class="sortierbar" data-spalte="isbn">ISBN <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="titel">Titel <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="autor">Autor <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="verlag">Verlag <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="veroeffentlichungsdatum">Veröffentlichungsdatum <span class="sortier-indikator"></span></th>
         <th>Aktion</th>
     </tr>
     <?php foreach ($daten['buecher'] as $buch) echo buchZeileHtml($buch); ?>
@@ -74,17 +74,25 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
     var aktuelle_seite = 1;
     var seiten_gesamt = <?php echo $seiten_gesamt; ?>;
     var aktueller_suchbegriff = "";
+    var sortiere_nach = "titel";
+    var richtung = "ASC";
 
     function ladeBuecher(seite, suche) {
         $.ajax({
             url: "buch_liste.php",
             method: "GET",
-            data: { suche: suche, seite: seite },
+            data: { suche: suche, seite: seite, sortiere_nach: sortiere_nach, richtung: richtung },
             dataType: "json",
             success: function(response) {
                 $("#buecher").html(
-                    "<tr><th>ISBN</th><th>Titel</th><th>Autor</th><th>Verlag</th><th>Veröffentlichungsdatum</th><th>Aktion</th></tr>" + response.zeilen
+                    "<tr><th class='sortierbar' data-spalte='isbn'>ISBN <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='titel'>Titel <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='autor'>Autor <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='verlag'>Verlag <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='veroeffentlichungsdatum'>Veröffentlichungsdatum <span class='sortier-indikator'></span></th>" +
+                    "<th>Aktion</th></tr>" + response.zeilen
                 );
+                aktualisiereSortierIndikatoren();
                 aktuelle_seite = response.aktuelle_seite;
                 seiten_gesamt = response.seiten_gesamt;
                 erstellePagination(aktuelle_seite, seiten_gesamt);
@@ -98,9 +106,27 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
         });
     }
 
+    function aktualisiereSortierIndikatoren() {
+        $("#buecher th.sortierbar").each(function() {
+            $(this).removeClass("sortiert-asc sortiert-desc");
+            if ($(this).data("spalte") === sortiere_nach) {
+                if (richtung === "ASC") {
+                    $(this).addClass("sortiert-asc");
+                    $(this).find(".sortier-indikator").text(" ↑");
+                } else {
+                    $(this).addClass("sortiert-desc");
+                    $(this).find(".sortier-indikator").text(" ↓");
+                }
+            } else {
+                $(this).find(".sortier-indikator").text("");
+            }
+        });
+    }
+
     $(document).ready(function() {
 
         erstellePagination(aktuelle_seite, seiten_gesamt);
+        aktualisiereSortierIndikatoren();
         initModal('buchModal', 'openBuchModalBtn', 'closeBuchModalBtn');
 
         $("#suche").keyup(function(){
@@ -110,6 +136,17 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
             debounceTimer = setTimeout(function() {
                 ladeBuecher(1, aktueller_suchbegriff);
             }, 300);
+        });
+
+        $(document).on("click", "#buecher th.sortierbar", function() {
+            var spalte = $(this).data("spalte");
+            if (sortiere_nach === spalte) {
+                richtung = (richtung === "ASC") ? "DESC" : "ASC";
+            } else {
+                sortiere_nach = spalte;
+                richtung = "ASC";
+            }
+            ladeBuecher(1, aktueller_suchbegriff);
         });
 
         $(document).on("click", ".page-btn", function() {

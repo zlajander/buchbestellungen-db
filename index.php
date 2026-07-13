@@ -65,12 +65,12 @@ $buecher = holeBuecher($con);
 
 <table id="bestellungen">
     <tr>
-        <th>Bestellnummer</th>
-        <th>Name</th>
-        <th>Adresse</th>
-        <th>ISBN</th>
-        <th>Titel</th>
-        <th>Erstellt am</th>
+        <th class="sortierbar" data-spalte="b.bestellnummer">Bestellnummer <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="b.lesername">Name <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="b.leseradresse">Adresse <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="bu.isbn">ISBN <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="bu.titel">Titel <span class="sortier-indikator"></span></th>
+        <th class="sortierbar" data-spalte="b.erstellt_am">Erstellt am <span class="sortier-indikator"></span></th>
         <th>Aktion</th>
     </tr>
     <?php foreach ($daten['bestellungen'] as $bestellung) echo zeileHtml($bestellung); ?>
@@ -88,17 +88,26 @@ $buecher = holeBuecher($con);
     var aktuelle_seite = 1;
     var seiten_gesamt = <?php echo $seiten_gesamt; ?>;
     var aktueller_suchbegriff = "";
+    var sortiere_nach = "b.bestellnummer";
+    var richtung = "ASC";
 
     function ladeDaten(seite, suche) {
         $.ajax({
             url: "suche.php",
             method: "GET",
-            data: { suche: suche, seite: seite },
+            data: { suche: suche, seite: seite, sortiere_nach: sortiere_nach, richtung: richtung },
             dataType: "json",
             success: function(response) {
                 $("#bestellungen").html(
-                    "<tr><th>Bestellnummer</th><th>Name</th><th>Adresse</th><th>ISBN</th><th>Titel</th><th>Erstellt am</th><th>Aktion</th></tr>" + response.zeilen
+                    "<tr><th class='sortierbar' data-spalte='b.bestellnummer'>Bestellnummer <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='b.lesername'>Name <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='b.leseradresse'>Adresse <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='bu.isbn'>ISBN <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='bu.titel'>Titel <span class='sortier-indikator'></span></th>" +
+                    "<th class='sortierbar' data-spalte='b.erstellt_am'>Erstellt am <span class='sortier-indikator'></span></th>" +
+                    "<th>Aktion</th></tr>" + response.zeilen
                 );
+                aktualisiereSortierIndikatoren();
                 aktuelle_seite = response.aktuelle_seite;
                 seiten_gesamt = response.seiten_gesamt;
                 erstellePagination(aktuelle_seite, seiten_gesamt);
@@ -112,9 +121,27 @@ $buecher = holeBuecher($con);
         });
     }
 
+    function aktualisiereSortierIndikatoren() {
+        $("#bestellungen th.sortierbar").each(function() {
+            $(this).removeClass("sortiert-asc sortiert-desc");
+            if ($(this).data("spalte") === sortiere_nach) {
+                if (richtung === "ASC") {
+                    $(this).addClass("sortiert-asc");
+                    $(this).find(".sortier-indikator").text(" ↑");
+                } else {
+                    $(this).addClass("sortiert-desc");
+                    $(this).find(".sortier-indikator").text(" ↓");
+                }
+            } else {
+                $(this).find(".sortier-indikator").text("");
+            }
+        });
+    }
+
     $(document).ready(function() {
 
         erstellePagination(aktuelle_seite, seiten_gesamt);
+        aktualisiereSortierIndikatoren();
         initModal('orderModal', 'openModalBtn', 'closeModalBtn');
 
         $("#buch_id").select2({
@@ -130,6 +157,17 @@ $buecher = holeBuecher($con);
             debounceTimer = setTimeout(function() {
                 ladeDaten(1, aktueller_suchbegriff);
             }, 300);
+        });
+
+        $(document).on("click", "#bestellungen th.sortierbar", function() {
+            var spalte = $(this).data("spalte");
+            if (sortiere_nach === spalte) {
+                richtung = (richtung === "ASC") ? "DESC" : "ASC";
+            } else {
+                sortiere_nach = spalte;
+                richtung = "ASC";
+            }
+            ladeDaten(1, aktueller_suchbegriff);
         });
 
         $(document).on("click", ".page-btn", function() {

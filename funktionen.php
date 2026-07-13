@@ -2,12 +2,23 @@
 
 const PRO_SEITE = 50;
 
-function holeBestellungen($con, $suchbegriff, $seite): array {
+function holeBestellungen($con, $suchbegriff, $seite, $sortiere_nach = "b.bestellnummer", $richtung = "ASC"): array {
     $offset = ($seite - 1) * PRO_SEITE;
     $pro_seite = PRO_SEITE;
 
+    $erlaubte_spalten = ["b.bestellnummer", "b.lesername", "b.leseradresse", "bu.isbn", "bu.titel", "b.erstellt_am"];
+    if (!in_array($sortiere_nach, $erlaubte_spalten)) {
+        $sortiere_nach = "b.bestellnummer";
+    }
+
+    $richtung = strtoupper($richtung);
+    if ($richtung !== "ASC" && $richtung !== "DESC") {
+        $richtung = "ASC";
+    }
+
     $spalten = "b.bestellnummer, b.lesername, b.leseradresse, bu.isbn, bu.titel, b.erstellt_am";
     $von = "FROM bestellungen b JOIN buecher bu ON b.buch_id = bu.buch_id";
+    $order = "ORDER BY $sortiere_nach $richtung";
 
     if ($suchbegriff !== "") {
         $suche_like = "%" . $suchbegriff . "%";
@@ -19,7 +30,7 @@ function holeBestellungen($con, $suchbegriff, $seite): array {
         $result_total = mysqli_stmt_get_result($stmt_total);
         $total = mysqli_fetch_assoc($result_total)['total'];
 
-        $stmt = mysqli_prepare($con, "SELECT $spalten $von $wo LIMIT ? OFFSET ?");
+        $stmt = mysqli_prepare($con, "SELECT $spalten $von $wo $order LIMIT ? OFFSET ?");
         mysqli_stmt_bind_param($stmt, "ssssssii", $suche_like, $suche_like, $suche_like, $suche_like, $suche_like, $suche_like, $pro_seite, $offset);
     } else {
         $stmt_total = mysqli_prepare($con, "SELECT COUNT(*) as total $von");
@@ -27,7 +38,7 @@ function holeBestellungen($con, $suchbegriff, $seite): array {
         $result_total = mysqli_stmt_get_result($stmt_total);
         $total = mysqli_fetch_assoc($result_total)['total'];
 
-        $stmt = mysqli_prepare($con, "SELECT $spalten $von LIMIT ? OFFSET ?");
+        $stmt = mysqli_prepare($con, "SELECT $spalten $von $order LIMIT ? OFFSET ?");
         mysqli_stmt_bind_param($stmt, "ii", $pro_seite, $offset);
     }
 
@@ -54,11 +65,22 @@ function holeBuecher($con): array {
     return $buecher;
 }
 
-function holeBuecherSeite($con, $suchbegriff, $seite): array {
+function holeBuecherSeite($con, $suchbegriff, $seite, $sortiere_nach = "titel", $richtung = "ASC"): array {
     $offset = ($seite - 1) * PRO_SEITE;
     $pro_seite = PRO_SEITE;
 
+    $erlaubte_spalten = ["isbn", "titel", "autor", "verlag", "veroeffentlichungsdatum"];
+    if (!in_array($sortiere_nach, $erlaubte_spalten)) {
+        $sortiere_nach = "titel";
+    }
+
+    $richtung = strtoupper($richtung);
+    if ($richtung !== "ASC" && $richtung !== "DESC") {
+        $richtung = "ASC";
+    }
+
     $spalten = "buch_id, isbn, titel, autor, verlag, veroeffentlichungsdatum, (SELECT COUNT(*) FROM bestellungen WHERE bestellungen.buch_id = buecher.buch_id) AS anzahl_bestellungen";
+    $order = "ORDER BY $sortiere_nach $richtung";
 
     if ($suchbegriff !== "") {
         $suche_like = "%" . $suchbegriff . "%";
@@ -70,7 +92,7 @@ function holeBuecherSeite($con, $suchbegriff, $seite): array {
         $result_total = mysqli_stmt_get_result($stmt_total);
         $total = mysqli_fetch_assoc($result_total)['total'];
 
-        $stmt = mysqli_prepare($con, "SELECT $spalten FROM buecher $wo ORDER BY titel LIMIT ? OFFSET ?");
+        $stmt = mysqli_prepare($con, "SELECT $spalten FROM buecher $wo $order LIMIT ? OFFSET ?");
         mysqli_stmt_bind_param($stmt, "ssssii", $suche_like, $suche_like, $suche_like, $suche_like, $pro_seite, $offset);
     } else {
         $stmt_total = mysqli_prepare($con, "SELECT COUNT(*) as total FROM buecher");
@@ -78,7 +100,7 @@ function holeBuecherSeite($con, $suchbegriff, $seite): array {
         $result_total = mysqli_stmt_get_result($stmt_total);
         $total = mysqli_fetch_assoc($result_total)['total'];
 
-        $stmt = mysqli_prepare($con, "SELECT $spalten FROM buecher ORDER BY titel LIMIT ? OFFSET ?");
+        $stmt = mysqli_prepare($con, "SELECT $spalten FROM buecher $order LIMIT ? OFFSET ?");
         mysqli_stmt_bind_param($stmt, "ii", $pro_seite, $offset);
     }
 

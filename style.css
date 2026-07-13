@@ -206,3 +206,23 @@ button:hover {
     transform: scale(1.1);
     pointer-events: none;
 }
+
+th.sortierbar {
+    cursor: pointer;
+    user-select: none;
+}
+
+th.sortierbar:hover {
+    background-color: #555;
+}
+
+th.sortiert-asc,
+th.sortiert-desc {
+    background-color: #1e4666;
+    font-weight: bold;
+}
+
+.sortier-indikator {
+    font-weight: bold;
+    margin-left: 4px;
+}
