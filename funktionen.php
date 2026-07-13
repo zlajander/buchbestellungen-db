@@ -58,7 +58,7 @@ function holeBuecherSeite($con, $suchbegriff, $seite): array {
     $offset = ($seite - 1) * PRO_SEITE;
     $pro_seite = PRO_SEITE;
 
-    $spalten = "isbn, titel, autor, verlag, veroeffentlichungsdatum";
+    $spalten = "buch_id, isbn, titel, autor, verlag, veroeffentlichungsdatum, (SELECT COUNT(*) FROM bestellungen WHERE bestellungen.buch_id = buecher.buch_id) AS anzahl_bestellungen";
 
     if ($suchbegriff !== "") {
         $suche_like = "%" . $suchbegriff . "%";
@@ -103,6 +103,10 @@ function buchZeileHtml($buch): string {
     $html .= "<td>" . htmlspecialchars($buch['autor'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars($buch['verlag'], ENT_QUOTES) . "</td>";
     $html .= "<td>" . htmlspecialchars(date('d.m.Y', strtotime($buch['veroeffentlichungsdatum'])), ENT_QUOTES) . "</td>";
+    $html .= "<td><button type='button' class='loeschen-btn buch-loeschen-btn'";
+    $html .= " data-id='" . htmlspecialchars($buch['buch_id'], ENT_QUOTES) . "'";
+    $html .= " data-titel='" . htmlspecialchars($buch['titel'], ENT_QUOTES) . "'";
+    $html .= " data-anzahl='" . htmlspecialchars($buch['anzahl_bestellungen'], ENT_QUOTES) . "'>Löschen</button></td>";
     $html .= "</tr>";
     return $html;
 }

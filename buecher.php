@@ -58,6 +58,7 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
         <th>Autor</th>
         <th>Verlag</th>
         <th>Veröffentlichungsdatum</th>
+        <th>Aktion</th>
     </tr>
     <?php foreach ($daten['buecher'] as $buch) echo buchZeileHtml($buch); ?>
 </table>
@@ -82,7 +83,7 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
             dataType: "json",
             success: function(response) {
                 $("#buecher").html(
-                    "<tr><th>ISBN</th><th>Titel</th><th>Autor</th><th>Verlag</th><th>Veröffentlichungsdatum</th></tr>" + response.zeilen
+                    "<tr><th>ISBN</th><th>Titel</th><th>Autor</th><th>Verlag</th><th>Veröffentlichungsdatum</th><th>Aktion</th></tr>" + response.zeilen
                 );
                 aktuelle_seite = response.aktuelle_seite;
                 seiten_gesamt = response.seiten_gesamt;
@@ -113,6 +114,23 @@ $seiten_gesamt = (int)ceil($daten['total'] / PRO_SEITE);
 
         $(document).on("click", ".page-btn", function() {
             ladeBuecher($(this).data("seite"), aktueller_suchbegriff);
+        });
+
+        $(document).on("click", ".buch-loeschen-btn", function() {
+            var id = $(this).data("id");
+            var titel = $(this).data("titel");
+            var anzahl = $(this).data("anzahl");
+
+            var text = "„" + titel + "\" löschen?";
+            if (anzahl > 0) {
+                text += "\nEs werden auch " + anzahl + " Bestellung(en) mitgelöscht.";
+            }
+
+            if (confirm(text)) {
+                var form = $("<form>", { method: "post", action: "buch_loeschen.php" });
+                form.append($("<input>", { type: "hidden", name: "id", value: id }));
+                form.appendTo("body").submit();
+            }
         });
 
         $("#buch-form").submit(function(e) {
